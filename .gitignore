@@ -1,0 +1,5 @@
+jiseti/
+Pipfile.lock
+instance/
+.env
+__pycache__/
