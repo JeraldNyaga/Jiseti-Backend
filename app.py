@@ -7,7 +7,7 @@ from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///jiseti.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql+psycopg2://rxhma-sys:rahmamoha@localhost/jiseti_db"
 db.init_app(app)
 migrate = Migrate(app, db)
 
