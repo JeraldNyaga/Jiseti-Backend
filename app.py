@@ -1,6 +1,9 @@
 from flask import Flask
 from flask_migrate import Migrate
 from models import db
+from flask_jwt_extended import JWTManager
+from dotenv import load_dotenv
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 

@@ -7,6 +7,16 @@ name = "pypi"
 flask = "*"
 flask-migrate = "*"
 sqlalchemy-serializer = "*"
+psycopg2-binary = "*"
+flask-sqlalchemy = "*"
+pyjwt = "*"
+flask-jwt-extended = "*"
+werkzeug = "*"
+flask-cors = "*"
+python-dotenv = "*"
+email-validator = "*"
+flask-bcrypt = "*"
+flask-restful = "*"
 
 [dev-packages]
 
