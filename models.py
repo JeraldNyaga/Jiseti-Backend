@@ -24,13 +24,15 @@ class User(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(50), nullable=False, unique=True)
-    first_name = db.Column(db.String(15), nullable=False)
-    last_name = db.Column(db.String(15), nullable=False)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(150), nullable=False, unique=True)
-    created_at= db.Column(db.DateTime(), default=datetime.utcnow)
+    created_at= db.Column(db.DateTime, default=datetime.now)
     password_hash = db.Column(db.String(100), nullable=False)
-    role = db.Column(db.String, default="user")
+    role = db.Column(db.Enum("admin","user", name="role_enum"), nullable=False, server_default="user")
 
+    # serialize rules
+    serialize_rules = ('-password_hash', '-records.user', '-notifications.user')
 
     # relationships
     records = db.relationship('Record', back_populates='user', cascade="all, delete-orphan")
@@ -38,7 +40,7 @@ class User(db.Model, SerializerMixin):
 
     @validates ('username')
     def validate_username (self, key, username):
-        if not username or len(username.strip())  <8:
+        if not username or len(username.strip())  < 8:
             raise ValueError ("Username must be atleast 8 characters")
         if " " in username:
             raise ValueError ("Username cannot contain spaces")
@@ -47,7 +49,7 @@ class User(db.Model, SerializerMixin):
     @validates ('email')
     def validate_email (self, key, address):
         normalized = address.strip().lower()
-        regex_validator = r"[A-Za-z][A-Za-z0-9]*(\.[A-Za-z0-9]+)*@[A-Za-z0-9]+\.[a-z]{2,}"
+        regex_validator = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match (regex_validator, normalized):
             raise ValueError ("Invalid format")
         return normalized
@@ -70,34 +72,64 @@ class Record (db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key =True)
     title = db.Column(db.String(180), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime(), default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime(), default=datetime.utcnow)
-    status = db.Column(db.String(50), nullable=False)
+    category = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime(), default=datetime.now)
+    updated_at = db.Column(db.DateTime(), onupdate=datetime.now)
+    status = db.Column(db.Enum("under investigation", "resolved", "rejected", name="status_enum"), nullable=False, default="under investigation")
+    priority = db.Column(db.Enum("medium", "high", "urgent", name="priority_enum"), nullable=False, default="medium")
 
-    #Foreignkey
+    # Foreignkey
     user_id =db.Column (db.Integer, db.ForeignKey('users.id'), nullable=False)
-    
-    #relationships
+
+     # Serialize rules to prevent circular references
+    serialize_rules = ('-user.records', '-notifications.record')
+
+    # relationships
     user = db.relationship ('User', back_populates = 'records')
+    notifications = db.relationship('Notification', back_populates='record', cascade="all, delete-orphan")
+
+    def __init__(self, title, description, category, status='under investigation', user_id=None):
+     self.title = title
+     self.description = description
+     self.category = category
+     self.status = status
+     self.user_id = user_id
+
+
+    @validates('description')
+    def validate_description(self, key, description):
+        if not description or len(description.strip()) < 10:
+            raise ValueError("Description must be at least 10 characters long")
+        return description.strip()
+
+
 
 class Notification (db.Model, SerializerMixin):
     __tablename__ = 'notifications'
 
     id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String, nullable=False)
-    approved_at = db.Column(db.DateTime(), default=datetime)
-    resolved_at = db.Column(db.DateTime(), default=None, nullable=True)
-    resolved_at = db.Column(db.DateTime(), default=datetime)
+    message = db.Column(db.Text, nullable=False)
+    approved_at = db.Column(db.DateTime(), default=datetime.now)
+    resolved_at = db.Column(db.DateTime(), nullable=True)
+    
+    # Serialize rules 
+    serialize_rules = ('-user.notifications', '-record.notifications')
 
-    #ForeignKey
+    #ForeignKeys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    record_id = db.Column(db.Integer, db.ForeignKey('records.id'), nullable=False)
+    record_id = db.Column(db.Integer, db.ForeignKey('records.id'), nullable=True)
 
     #Relationships
     user = db.relationship ('User', back_populates = 'notifications')
+    record = db.relationship('Record', back_populates='notifications')
+
+    @validates('message')
+    def validate_message(self, key, message):
+        if not message or len(message.strip()) < 1:
+            raise ValueError("Message cannot be empty")
+        return message.strip()
     
-
-
+#the record model still has errors to be worked on tomorrow
     
 
 
