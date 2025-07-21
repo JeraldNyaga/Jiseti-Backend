@@ -15,7 +15,7 @@ class Signup(Resource):
         first_name = data.get ("first_name") 
         last_name = data.get ("last_name")
 
-        if not all([username, email, password, first_name, last_name]):
+        if not all([username, email, password, first_name, last_name,]):
             return {"error": "All fields are required"}, 400
         
         current_user = User.query.filter((User.username ==username) | (User.email ==email)).first()
@@ -26,12 +26,15 @@ class Signup(Resource):
         hashed_password =bcrypt.generate_password_hash(password).decode("utf-8")
 
         #add user
-        new_user = User(username =username, email=email, password_hash=hashed_password, first_name=first_name, last_name=last_name)
-        db.session.add(new_user)
-        db.session.commit()
+        new_user = User(username =username, email=email, password_hash=hashed_password, first_name=first_name, last_name=last_name,)
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            return {"message": "User created successfully"}, 201
+        except Exception as e:
+            db.session.rollback()
+            return {"error": "Failed to create user", "details": str(e)}, 500
 
-        return {"message": "User created successfully"}, 201
-    
 class Login(Resource):
     def post(self):
         data = request.get_json()
@@ -47,13 +50,14 @@ class Login(Resource):
         if user and bcrypt.check_password_hash(user.password_hash, password):
 
             # generate access token
-            access_token = create_access_token(identity=user.id)
+            access_token = create_access_token(identity=str(user.id))
             return {
                 "access_token": access_token,
                 "user": {
                     "id": user.id,
                     "username": user.username,
-                    "email": user.email
+                    "email": user.email,
+                    "role": user.role
                 }
             }, 200
         else:

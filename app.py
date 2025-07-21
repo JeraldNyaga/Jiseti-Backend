@@ -9,10 +9,16 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import os
 
-from resources.auth import Signup, Login
-from resources.record import RecordList
-from resources.record import SingleRecord
+# File upload settings
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit
+UPLOAD_FOLDER = 'uploads/'
 
+from resources.auth import Signup, Login
+from resources.record import RecordResource
+from resources.record import AdminRecordResource
+from resources.record import RecordMediaResource
+from resources.record import RecordLocationResource
 
 #load environment
 load_dotenv()
@@ -29,7 +35,6 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 #Setup  and configure Database URL
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["BUNDLE_ERRORS"] = True
 
 #Initialize database and migrations
 db.init_app(app)
@@ -40,12 +45,19 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
 #setup cors
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})  
 
+# Auth routes
 api.add_resource(Signup, "/signup")
 api.add_resource(Login, "/login")
-api.add_resource(RecordList, '/records')
-api.add_resource(SingleRecord, '/records/<int:record_id>')
+
+# User routes
+api.add_resource(RecordResource, "/records", "/records/<int:record_id>") 
+api.add_resource(RecordMediaResource, "/records/media")
+api.add_resource(RecordLocationResource, "/records/location")
+
+# Admin routes
+api.add_resource(AdminRecordResource, "/admin/records")
 
 #Run the Flask development server
 if __name__ == '__main__':
