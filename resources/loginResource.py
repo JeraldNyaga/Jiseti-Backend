@@ -8,7 +8,7 @@ bcrypt = Bcrypt()
 
 
 
-class Login(Resource):
+class LoginResource(Resource):
     def post(self):
         data = request.get_json()
         email = data.get("email")

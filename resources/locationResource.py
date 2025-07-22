@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import Record
 
 
-class RecordLocationResource(Resource):
+class LocationResource(Resource):
     @jwt_required()
     def patch(self, record_id):
         user_id = get_jwt_identity()
