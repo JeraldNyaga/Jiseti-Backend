@@ -1,11 +1,10 @@
-from flask import request, jsonify
+from flask import request
 from flask_restful import Resource
-from models import db, User
+from models import User
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token
 
 bcrypt = Bcrypt()
-
 
 
 class LoginResource(Resource):
@@ -20,7 +19,7 @@ class LoginResource(Resource):
         # find user by email
         user = User.query.filter_by(email=email).first()
 
-        if user and bcrypt.check_password_hash(user.password_hash, password):
+        if user and bcrypt.check_password_hash(user.password, password):
 
             # generate access token
             access_token = create_access_token(identity=str(user.id))

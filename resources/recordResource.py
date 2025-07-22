@@ -1,12 +1,8 @@
 from flask_restful import Resource, reqparse
 from flask import request
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import Record, db, User
 from datetime import datetime
-from utils import send_email_notification, send_sms_notification
-from werkzeug.utils import secure_filename
-import os
-from app import ALLOWED_EXTENSIONS, MAX_CONTENT_LENGTH, UPLOAD_FOLDER
 
 
 def is_admin(user_id):
