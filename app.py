@@ -1,7 +1,7 @@
 from flask import Flask
 from datetime import timedelta
 from flask_migrate import Migrate
-from flask_restful import Api, Resource
+from flask_restful import Api
 from models import db
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
@@ -14,11 +14,12 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit
 UPLOAD_FOLDER = 'uploads/'
 
-from resources.auth import Signup, Login
-from resources.record import RecordResource
-from resources.record import AdminRecordResource
-from resources.record import RecordMediaResource
-from resources.record import RecordLocationResource
+from resources.loginResource import LoginResource
+from resources.signupResource import SignupResource
+# from resources.recordResource import RecordResource
+# from resources.recordResource import AdminRecordResource
+# from resources.recordResource import RecordMediaResource
+# from resources.recordResource import RecordLocationResource
 
 #load environment
 load_dotenv()
@@ -48,16 +49,16 @@ jwt = JWTManager(app)
 CORS(app, resources={r"/*": {"origins": "*"}})  
 
 # Auth routes
-api.add_resource(Signup, "/signup")
-api.add_resource(Login, "/login")
+api.add_resource(SignupResource, "/signup")
+api.add_resource(LoginResource, "/login")
 
 # User routes
-api.add_resource(RecordResource, "/records", "/records/<int:record_id>") 
-api.add_resource(RecordMediaResource, "/records/media")
-api.add_resource(RecordLocationResource, "/records/location")
+#api.add_resource(RecordResource, "/records", "/records/<int:record_id>") 
+#api.add_resource(RecordMediaResource, "/records/media")
+#api.add_resource(RecordLocationResource, "/records/location")
 
 # Admin routes
-api.add_resource(AdminRecordResource, "/admin/records")
+#api.add_resource(AdminRecordResource, "/admin/records")
 
 #Run the Flask development server
 if __name__ == '__main__':
