@@ -14,9 +14,9 @@ class RecordResource(Resource):
     parser.add_argument('type', required=True, help='Type is required')
     parser.add_argument('title', required=True, help='Title is required')
     parser.add_argument('description', required=True, help='Description is required')
-    parser.add_argument('location_address', required=False)
-    parser.add_argument('latitude', type=float, required=False)
-    parser.add_argument('longitude', type=float, required=False)
+    parser.add_argument('latitude', type=float, required=True)
+    parser.add_argument('longitude', type=float, required=True)
+    parser.add_argument('status', type=str, required=True)
 
     # GET all records or specific record
     @jwt_required()
@@ -59,16 +59,16 @@ class RecordResource(Resource):
             'type': record.type,
             'title': record.title,
             'description': record.description,
-            'location_address': record.location_address,
+            # 'location_address': record.location_address,
             'latitude': record.latitude,
             'longitude': record.longitude,
             'images': record.images or [],
-            'videos': record.videos or [],
+            # 'videos': record.videos or [],
             'status': record.status,
-            'created_by': record.created_by,
+            # 'created_by': record.created_by,
             'created_at': record.created_at.isoformat() if record.created_at else None,
             'updated_at': record.updated_at.isoformat() if record.updated_at else None,
-            'admin_comment': getattr(record, 'admin_comment', None)
+            # 'admin_comment': getattr(record, 'admin_comment', None)
         }
 
     # CREATE new record
@@ -97,10 +97,11 @@ class RecordResource(Resource):
                 latitude=args.get('latitude'),
                 longitude=args.get('longitude'),
                 images=[],
-                videos=[],
-                status='draft',
+                # videos=[],
+                status='pending',
                 created_by=int(user_id),
-                created_at=datetime.utcnow()
+                created_at=datetime.now(datetime.UTC),
+                updated_at=datetime.now(datetime.UTC)
             )
             
             db.session.add(record)

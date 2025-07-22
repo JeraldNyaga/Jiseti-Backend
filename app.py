@@ -16,7 +16,7 @@ UPLOAD_FOLDER = 'uploads/'
 
 from resources.loginResource import LoginResource
 from resources.signupResource import SignupResource
-# from resources.recordResource import RecordResource
+from resources.recordResource import RecordResource
 # from resources.recordResource import AdminRecordResource
 # from resources.recordResource import RecordMediaResource
 # from resources.recordResource import RecordLocationResource
@@ -53,7 +53,7 @@ api.add_resource(SignupResource, "/signup")
 api.add_resource(LoginResource, "/login")
 
 # User routes
-#api.add_resource(RecordResource, "/records", "/records/<int:record_id>") 
+api.add_resource(RecordResource, "/records", "/records/<int:record_id>") 
 #api.add_resource(RecordMediaResource, "/records/media")
 #api.add_resource(RecordLocationResource, "/records/location")
 
