@@ -1,4 +1,4 @@
-from baseModel import db
+from .baseModel import db
 from datetime import datetime, timezone
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
