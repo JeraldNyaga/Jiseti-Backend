@@ -13,6 +13,7 @@ class SignupResource(Resource):
         password = data.get("password")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
+        role = data.get("role")
 
         if not all([username, email, password, first_name, last_name]):
             return {"error": "All fields are required"}, 400
@@ -29,6 +30,7 @@ class SignupResource(Resource):
             email=email,
             first_name=first_name,
             last_name=last_name,
+            role=role
         )
 
         try:
