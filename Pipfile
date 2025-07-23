@@ -17,6 +17,7 @@ python-dotenv = "*"
 email-validator = "*"
 flask-bcrypt = "*"
 flask-restful = "*"
+twilio = "*"
 
 [dev-packages]
 

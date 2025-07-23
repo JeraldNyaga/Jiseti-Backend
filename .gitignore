@@ -3,3 +3,5 @@ Pipfile.lock
 instance/
 .env
 __pycache__/
+.vscode/
+migrations/
