@@ -2,7 +2,7 @@ from flask import Flask
 from datetime import timedelta
 from flask_migrate import Migrate
 from flask_restful import Api
-from models import db
+from models.baseModel import db
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 from flask_bcrypt import Bcrypt

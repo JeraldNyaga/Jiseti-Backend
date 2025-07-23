@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource
-from models import db, User
+from models.baseModel import db
+from models.userModel import User
 from flask_bcrypt import Bcrypt
 
 bcrypt = Bcrypt()
