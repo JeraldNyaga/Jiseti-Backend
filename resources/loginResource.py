@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource
-from models import User
+from models.userModel import User
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token
 

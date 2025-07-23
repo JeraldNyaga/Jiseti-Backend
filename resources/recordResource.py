@@ -1,7 +1,9 @@
 from flask_restful import Resource, reqparse
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import Record, db, User
+from models.baseModel import db
+from models.userModel import User
+from models.recordModel import Record
 from datetime import datetime, timezone
 
 
