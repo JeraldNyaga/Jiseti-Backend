@@ -2,12 +2,14 @@ from flask_restful import Resource, reqparse
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import Record, db, User
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def is_admin(user_id):
     user = User.query.get(user_id)
-    return user and user.is_admin
+    if (user and user.role == "admin"):
+        return True
+    return False
 
 class RecordResource(Resource):
     parser = reqparse.RequestParser()
@@ -17,6 +19,7 @@ class RecordResource(Resource):
     parser.add_argument('latitude', type=float, required=True)
     parser.add_argument('longitude', type=float, required=True)
     parser.add_argument('status', type=str, required=True)
+    parser.add_argument('images', type=list, location='json', required=True)
 
     # GET all records or specific record
     @jwt_required()
@@ -28,7 +31,7 @@ class RecordResource(Resource):
             if not record:
                 return {'message': 'Record not found'}, 404
             
-            if record.created_by != int(user_id) and not is_admin(user_id):
+            if record.user_id != int(user_id) and not is_admin(user_id):
                 return {'message': 'Unauthorized access'}, 403
                 
             return self.format_record(record)
@@ -68,6 +71,7 @@ class RecordResource(Resource):
             # 'created_by': record.created_by,
             'created_at': record.created_at.isoformat() if record.created_at else None,
             'updated_at': record.updated_at.isoformat() if record.updated_at else None,
+            'user_id': record.user_id
             # 'admin_comment': getattr(record, 'admin_comment', None)
         }
 
@@ -93,15 +97,14 @@ class RecordResource(Resource):
                 type=args['type'],
                 title=args['title'].strip(),
                 description=args['description'].strip(),
-                location_address=args.get('location_address', '').strip() if args.get('location_address') else None,
                 latitude=args.get('latitude'),
                 longitude=args.get('longitude'),
-                images=[],
+                images=args.get('images'),
                 # videos=[],
                 status='pending',
-                created_by=int(user_id),
-                created_at=datetime.now(datetime.UTC),
-                updated_at=datetime.now(datetime.UTC)
+                user_id=int(user_id),
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
             )
             
             db.session.add(record)
