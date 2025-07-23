@@ -15,13 +15,13 @@ def is_admin(user_id):
 
 class RecordResource(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('type', required=True, help='Type is required')
-    parser.add_argument('title', required=True, help='Title is required')
-    parser.add_argument('description', required=True, help='Description is required')
-    parser.add_argument('latitude', type=float, required=True)
-    parser.add_argument('longitude', type=float, required=True)
-    parser.add_argument('status', type=str, required=True)
-    parser.add_argument('images', type=list, location='json', required=True)
+    parser.add_argument('type', required=False, help='Type is required')
+    parser.add_argument('title', required=False, help='Title is required')
+    parser.add_argument('description', required=False, help='Description is required')
+    parser.add_argument('latitude', type=float, required=False)
+    parser.add_argument('longitude', type=float, required=False)
+    parser.add_argument('status', type=str, required=False)
+    parser.add_argument('images', type=list, location='json', required=False)
 
     # GET all records or specific record
     @jwt_required()
@@ -44,7 +44,7 @@ class RecordResource(Resource):
             if is_admin(user_id):
                 records = Record.query.paginate(page=page, per_page=per_page, error_out=False)
             else:
-                records = Record.query.filter_by(created_by=user_id)\
+                records = Record.query.filter_by(user_id=user_id)\
                            .paginate(page=page, per_page=per_page, error_out=False)
             
             return {
@@ -123,14 +123,14 @@ class RecordResource(Resource):
     
     # UPDATE record
     @jwt_required()
-    def put(self, record_id):
+    def patch(self, record_id):
         user_id = get_jwt_identity()
         record = Record.query.get(record_id)
         
         if not record:
             return {'message': 'Record not found'}, 404
             
-        if record.created_by != int(user_id):
+        if record.user_id != int(user_id):
             return {'message': 'Unauthorized to edit this record'}, 403
         
         if record.status in ['under-investigation', 'rejected', 'resolved']:
@@ -139,27 +139,29 @@ class RecordResource(Resource):
         args = self.parser.parse_args()
         
         try:
-            if args['type'] not in ['red-flag', 'intervention']:
-                return {'message': 'Invalid record type'}, 400
-                
-            record.type = args['type']
-            record.title = args['title'].strip()
-            record.description = args['description'].strip()
+            if args.get('type'):
+                if args['type'].lower() not in ['red-flag', 'intervention']:
+                    return {'message': 'Invalid record type'}, 400
+                record.type = args['type'].lower()
+
+            if args.get('title'):
+                record.title = args['title'].strip()
+
+            if args.get('description'):
+                record.description = args['description'].strip()
             
-            if args.get('location'):
-                record.location = args['location'].strip()
             
-            if args.get('latitude'):
+            if args.get('latitude') is not None:
                 if not -90 <= args['latitude'] <= 90:
                     return {'message': 'Invalid latitude'}, 400
                 record.latitude = args['latitude']
                 
-            if args.get('longitude'):
+            if args.get('longitude') is not None:
                 if not -180 <= args['longitude'] <= 180:
                     return {'message': 'Invalid longitude'}, 400
                 record.longitude = args['longitude']
             
-            record.updated_at = datetime.utcnow()
+            record.updated_at = datetime.now(timezone.utc)
             db.session.commit()
             
             return {
@@ -170,7 +172,7 @@ class RecordResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {'message': f'Error updating record: {str(e)}'}, 500
-
+    
     # DELETE record
     @jwt_required()
     def delete(self, record_id):
@@ -180,7 +182,7 @@ class RecordResource(Resource):
         if not record:
             return {'message': 'Record not found'}, 404
             
-        if record.created_by != int(user_id):
+        if record.user_id != int(user_id):
             return {'message': 'Unauthorized to delete this record'}, 403
         
         if record.status in ['under-investigation', 'rejected', 'resolved']:
@@ -194,5 +196,3 @@ class RecordResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {'message': f'Error deleting record: {str(e)}'}, 500
-
-
