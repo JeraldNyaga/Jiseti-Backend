@@ -1,11 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy_serializer import SerializerMixin
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_bcrypt import Bcrypt
 from sqlalchemy.orm import validates
-from sqlalchemy import Enum
-from sqlalchemy import ForeignKey
+
 import re
 
 bcrypt = Bcrypt()
@@ -94,18 +93,19 @@ class Record (db.Model, SerializerMixin):
     user = db.relationship ('User', back_populates = 'records')
     notifications = db.relationship('Notification', back_populates='record', cascade="all, delete-orphan")
 
-    def __init__(self, title, description, type, latitude, longitude, location_address, images=None,created_at=None,status='draft',user_id=None):
-     self.title = title
-     self.description = description
-     self.type = type
-     self.status = status
-     self.user_id = user_id
-     self.latitude = latitude
-     self.longitude = longitude
-     self.location_address = location_address
-     self.images = images
-    #  self.videos = videos
-     self.created_at = created_at
+    def __init__(self, title, description, type, latitude, longitude, images=None, status='pending',user_id=None, created_at=None, updated_at=None):
+        self.title = title
+        self.description = description
+        self.type = type
+        self.status = status
+        self.user_id = user_id
+        self.latitude = latitude
+        self.longitude = longitude
+        #self.location_address = location_address
+        self.images = images
+        #  self.videos = videos
+        self.created_at = created_at or datetime.now(timezone.utc)
+        self.updated_at = updated_at or datetime.now(timezone.utc)
 
     @validates('description')
     def validate_description(self, key, description):
@@ -237,7 +237,3 @@ class Notification (db.Model, SerializerMixin):
             raise ValueError("Message cannot be empty")
         return message.strip()
     
-#the record model still has errors to be worked on tomorrow
-    
-
-
