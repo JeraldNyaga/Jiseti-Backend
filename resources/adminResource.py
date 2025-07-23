@@ -9,7 +9,9 @@ from utils import send_email_notification, send_sms_notification
 
 def is_admin(user_id):
     user = User.query.get(user_id)
-    return user and user.is_admin
+    if (user and user.role == "admin"):
+        return True
+    return False
 
 class AdminResource(Resource):
     @jwt_required()
