@@ -17,7 +17,7 @@ UPLOAD_FOLDER = 'uploads/'
 from resources.loginResource import LoginResource
 from resources.signupResource import SignupResource
 from resources.recordResource import RecordResource
-# from resources.recordResource import AdminRecordResource
+from resources.adminResource import AdminResource
 # from resources.recordResource import RecordMediaResource
 # from resources.recordResource import RecordLocationResource
 
@@ -58,7 +58,7 @@ api.add_resource(RecordResource, "/records", "/records/<int:record_id>")
 #api.add_resource(RecordLocationResource, "/records/location")
 
 # Admin routes
-#api.add_resource(AdminRecordResource, "/admin/records")
+api.add_resource(AdminResource, "/admin/records", "/admin/records/<int:record_id>")
 
 #Run the Flask development server
 if __name__ == '__main__':

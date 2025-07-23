@@ -24,7 +24,7 @@ class ImageMediaResource(Resource):
         if record.created_by != int(user_id):
             return {'message': 'Unauthorized to modify this record'}, 403
         
-        if record.status in ['under-investigation', 'rejected', 'resolved']:
+        if record.status in ['under investigation', 'rejected', 'resolved']:
             return {'message': 'Cannot modify media for record with current status'}, 400
         
         if 'file' not in request.files:

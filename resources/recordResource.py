@@ -77,6 +77,7 @@ class RecordResource(Resource):
             # 'admin_comment': getattr(record, 'admin_comment', None)
         }
 
+
     # CREATE new record
     @jwt_required()
     def post(self):
@@ -133,7 +134,7 @@ class RecordResource(Resource):
         if record.user_id != int(user_id):
             return {'message': 'Unauthorized to edit this record'}, 403
         
-        if record.status in ['under-investigation', 'rejected', 'resolved']:
+        if record.status in ['under investigation', 'rejected', 'resolved']:
             return {'message': 'Cannot edit record with current status'}, 400
         
         args = self.parser.parse_args()
@@ -185,7 +186,7 @@ class RecordResource(Resource):
         if record.user_id != int(user_id):
             return {'message': 'Unauthorized to delete this record'}, 403
         
-        if record.status in ['under-investigation', 'rejected', 'resolved']:
+        if record.status in ['under investigation', 'rejected', 'resolved']:
             return {'message': 'Cannot delete record with current status'}, 400
         
         try:

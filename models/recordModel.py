@@ -11,11 +11,11 @@ class Record (db.Model, SerializerMixin):
     title = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime(), default=datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime(), onupdate=datetime.now(timezone.utc))
-    status = db.Column(db.Enum("pending", "under investigation", "resolved", "rejected", name="status_enum"), nullable=False, default="under investigation")
+    status = db.Column(db.Enum('pending','under investigation' ,'rejected', 'resolved', name="status_enum"), nullable=False, default="pending")
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
     images = db.Column(db.JSON)  
-    # videos = db.Column(db.JSON)
+    #videos = db.Column(db.JSON)
 
     # Foreignkey
     user_id =db.Column (db.Integer, db.ForeignKey('users.id'), nullable=False)

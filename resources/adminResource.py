@@ -1,10 +1,10 @@
 from flask_restful import Resource, reqparse
-from flask import current_app
+from flask import current_app, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.baseModel import db
 from models.userModel import User
 from models.recordModel import Record
-from datetime import datetime
+from datetime import datetime, timezone
 from utils import send_email_notification, send_sms_notification
 
 def is_admin(user_id):
@@ -14,6 +14,44 @@ def is_admin(user_id):
     return False
 
 class AdminResource(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+
+        if not is_admin(user_id):
+            return {'message': 'Admin access required'}, 403
+
+        page = request.args.get('page', 1, type=int)
+        per_page = min(request.args.get('per_page', 10, type=int), 100)
+
+        records = Record.query.paginate(page=page, per_page=per_page, error_out=False)
+
+        return {
+            'records': [self.format_record(r) for r in records.items],
+            'pagination': {
+                'page': page,
+                'pages': records.pages,
+                'total': records.total,
+                'has_next': records.has_next,
+                'has_prev': records.has_prev
+            }
+        }
+
+    def format_record(self, record):
+        return {
+            'id': record.id,
+            'type': record.type,
+            'title': record.title,
+            'description': record.description,
+            'latitude': record.latitude,
+            'longitude': record.longitude,
+            'images': record.images or [],
+            'status': record.status,
+            'created_at': record.created_at.isoformat() if record.created_at else None,
+            'updated_at': record.updated_at.isoformat() if record.updated_at else None,
+            'user_id': record.user_id
+        }
+
     @jwt_required()
     def patch(self, record_id):
         user_id = get_jwt_identity()
@@ -27,11 +65,11 @@ class AdminResource(Resource):
         
         parser = reqparse.RequestParser()
         parser.add_argument('status', required=True, help='Status is required')
-        parser.add_argument('admin_comment', required=False)
+        #parser.add_argument('admin_comment', required=False)
         
         args = parser.parse_args()
         
-        valid_statuses = ['draft', 'under-investigation', 'rejected', 'resolved']
+        valid_statuses = ['pending', 'under investigation', 'rejected', 'resolved']
         if args['status'] not in valid_statuses:
             return {'message': 'Invalid status'}, 400
         
@@ -39,10 +77,10 @@ class AdminResource(Resource):
             old_status = record.status
             record.status = args['status']
             
-            if args.get('admin_comment'):
-                record.admin_comment = args['admin_comment'].strip()
+            # if args.get('admin_comment'):
+            #     record.admin_comment = args['admin_comment'].strip()
             
-            record.updated_at = datetime.utcnow()
+            record.updated_at = datetime.now(timezone.utc)
             db.session.commit()
             
             self.send_notification(record, old_status, args['status'])
@@ -53,7 +91,7 @@ class AdminResource(Resource):
                     'id': record.id,
                     'title': record.title,
                     'status': record.status,
-                    'created_by': record.created_by
+                    'user_id': record.user_id
                 }
             }
             
@@ -65,7 +103,7 @@ class AdminResource(Resource):
         if old_status == new_status:
             return
             
-        user = User.query.get(record.created_by)
+        user = User.query.get(record.user_id)
         if not user or not user.email:
             return
             
@@ -82,8 +120,8 @@ class AdminResource(Resource):
         
         try:
             send_email_notification(user.email, subject, body)
-            if user.phone:
-                send_sms_notification(user.phone, f"Record #{record.id} status updated to {new_status}")
+            # if user.phone:
+            #     send_sms_notification(user.phone, f"Record #{record.id} status updated to {new_status}")
         except Exception as e:
             # Log error but don't fail the request
             current_app.logger.error(f"Failed to send notification: {str(e)}")

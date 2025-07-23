@@ -17,7 +17,7 @@ class LocationResource(Resource):
             return {'message': 'You can only update location for your own records'}, 403
         
         # Check if location can be updated
-        if record.status in ['under-investigation', 'rejected', 'resolved']:
+        if record.status in ['under investigation', 'rejected', 'resolved']:
             return {'message': 'Cannot update location for record that is under investigation, rejected, or resolved'}, 400
         
         parser = reqparse.RequestParser()
