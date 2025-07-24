@@ -5,6 +5,8 @@ from models.baseModel import db
 from models.userModel import User
 from models.recordModel import Record
 from datetime import datetime, timezone
+import cloudinary
+import cloudinary.uploader
 
 
 def is_admin(user_id):
@@ -82,42 +84,51 @@ class RecordResource(Resource):
     @jwt_required()
     def post(self):
         user_id = get_jwt_identity()
-        args = self.parser.parse_args()
-        
-        if args['type'] not in ['Red-Flag', 'Intervention']:
-            return {'message': 'Type must be Red-Flag or Intervention'}, 400
-        
-        if args.get('latitude'):
-            if not -90 <= args['latitude'] <= 90:
-                return {'message': 'Invalid latitude'}, 400
-                
-        if args.get('longitude'):
-            if not -180 <= args['longitude'] <= 180:
-                return {'message': 'Invalid longitude'}, 400
-        
         try:
+            record_type = request.form.get('type')
+            title = request.form.get('title', '').strip()
+            description = request.form.get('description', '').strip()
+            latitude = request.form.get('latitude', type=float)
+            longitude = request.form.get('longitude', type=float)
+
+            if record_type not in ['Red-Flag', 'Intervention']:
+                return {'message': 'Type must be Red-Flag or Intervention'}, 400
+
+            if latitude is not None and not -90 <= latitude <= 90:
+                return {'message': 'Invalid latitude'}, 400
+
+            if longitude is not None and not -180 <= longitude <= 180:
+                return {'message': 'Invalid longitude'}, 400
+
+
+            uploaded_files = request.files.getlist('images')
+            image_urls = []
+            for file in uploaded_files:
+                if file:
+                    upload_result = cloudinary.uploader.upload(file)
+                    image_urls.append(upload_result['secure_url'])  # fixed typo here
+                    
             record = Record(
-                type=args['type'],
-                title=args['title'].strip(),
-                description=args['description'].strip(),
-                latitude=args.get('latitude'),
-                longitude=args.get('longitude'),
-                images=args.get('images'),
-                # videos=[],
+                type=record_type,
+                title=title,
+                description=description,
+                latitude=latitude,
+                longitude=longitude,
+                images=image_urls,
                 status='pending',
                 user_id=int(user_id),
                 created_at=datetime.now(timezone.utc),
                 updated_at=datetime.now(timezone.utc)
             )
-            
+
             db.session.add(record)
             db.session.commit()
-            
+
             return {
                 'message': 'Record created successfully',
                 'record': self.format_record(record)
             }, 201
-            
+
         except Exception as e:
             db.session.rollback()
             return {'message': f'Error creating record: {str(e)}'}, 500

@@ -1,5 +1,4 @@
 import cloudinary
-import cloudinary.uploader
 from flask import Flask
 from datetime import timedelta
 from flask_migrate import Migrate
@@ -11,17 +10,13 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import os
 
-# File upload settings
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit
-UPLOAD_FOLDER = 'uploads/'
+
 
 from resources.loginResource import LoginResource
 from resources.signupResource import SignupResource
 from resources.recordResource import RecordResource
 from resources.adminResource import AdminResource
-# from resources.recordResource import RecordMediaResource
-# from resources.recordResource import RecordLocationResource
+
 
 #load environment
 load_dotenv()
@@ -38,6 +33,13 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 #Setup  and configure Database URL
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+#Configure cloudinary to handle images:
+cloudinary.config(
+    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key = os.getenv('CLOUDINARY_API_KEY'),
+    api_secret = os.getenv('CLOUDINARY_API_SECRET') 
+)
 
 #Initialize database and migrations
 db.init_app(app)
@@ -58,8 +60,7 @@ api.add_resource(LoginResource, "/login")
 
 # User routes
 api.add_resource(RecordResource, "/records", "/records/<int:record_id>") 
-#api.add_resource(RecordMediaResource, "/records/media")
-#api.add_resource(RecordLocationResource, "/records/location")
+
 
 # Admin routes
 api.add_resource(AdminResource, "/admin/records", "/admin/records/<int:record_id>")
