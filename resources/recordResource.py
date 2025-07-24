@@ -21,7 +21,7 @@ class RecordResource(Resource):
     parser.add_argument('latitude', type=float, required=False)
     parser.add_argument('longitude', type=float, required=False)
     parser.add_argument('status', type=str, required=False)
-    parser.add_argument('images', type=list, location='json', required=False)
+    parser.add_argument('images', type=str, location='json', required=False)
 
     # GET all records or specific record
     @jwt_required()
@@ -67,7 +67,7 @@ class RecordResource(Resource):
             # 'location_address': record.location_address,
             'latitude': record.latitude,
             'longitude': record.longitude,
-            'images': record.images or [],
+            'images': record.images or '',
             # 'videos': record.videos or [],
             'status': record.status,
             # 'created_by': record.created_by,

@@ -1,3 +1,5 @@
+import cloudinary
+import cloudinary.uploader
 from flask import Flask
 from datetime import timedelta
 from flask_migrate import Migrate
@@ -40,6 +42,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 #Initialize database and migrations
 db.init_app(app)
 migrate = Migrate(app, db)
+with app.app_context():
+    db.create_all()
 
 #Initialize extensions
 bcrypt = Bcrypt(app)
