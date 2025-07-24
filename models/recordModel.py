@@ -2,6 +2,7 @@ from .baseModel import db
 from datetime import datetime, timezone
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
+
 class Record (db.Model, SerializerMixin):
     __tablename__ = 'records'
 
