@@ -116,27 +116,27 @@ class Record (db.Model, SerializerMixin):
     def get_categories_for_type(record_type):
 
         red_flag_categories = [
-            "corruption",
-            "theft", 
-            "land-grabbing",
-            "mismanagement of resources",
-            "bribery",
-            "embezzlement",
-            "fraud",
-            "other"
+            "Corruption",
+            "Theft", 
+            "Land-grabbing",
+            "Mismanagement of resources",
+            "Bribery",
+            "Embezzlement",
+            "Fraud",
+            "Other"
         ]
         
         intervention_categories = [
-            "repair bad road sections",
-            "collapsed bridges", 
-            "flooding",
-            "sewage",
-            "water shortage",
-            "electricity issues",
-            "healthcare facilities",
-            "education facilities",
-            "waste management",
-            "other"
+            "Repair bad road sections",
+            "Collapsed bridges", 
+            "Flooding",
+            "Sewage",
+            "Water shortage",
+            "Electricity issues",
+            "Healthcare facilities",
+            "Education facilities",
+            "Waste management",
+            "Other"
         ]
         
         if record_type == "Red-Flag":

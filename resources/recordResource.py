@@ -135,7 +135,8 @@ class RecordResource(Resource):
     
     # UPDATE record
     @jwt_required()
-    def patch(self, record_id):
+
+    def put(self, record_id):
         user_id = get_jwt_identity()
         record = Record.query.get(record_id)
         
@@ -147,44 +148,55 @@ class RecordResource(Resource):
         
         if record.status in ['under investigation', 'rejected', 'resolved']:
             return {'message': 'Cannot edit record with current status'}, 400
-        
-        args = self.parser.parse_args()
-        
+
         try:
-            if args.get('type'):
-                if args['type'].lower() not in ['red-flag', 'intervention']:
+            record_type = request.form.get("type")
+            if record_type:
+                if record_type.lower() not in ['red-flag', 'intervention']:
                     return {'message': 'Invalid record type'}, 400
-                record.type = args['type'].lower()
+                record.type = record_type.capitalize() if record_type.lower() == "intervention" else "Red-Flag"
 
-            if args.get('title'):
-                record.title = args['title'].strip()
+            title = request.form.get('title')
+            description = request.form.get('description')
+            latitude = request.form.get('latitude', type=float)
+            longitude = request.form.get('longitude', type=float)
 
-            if args.get('description'):
-                record.description = args['description'].strip()
-            
-            
-            if args.get('latitude') is not None:
-                if not -90 <= args['latitude'] <= 90:
-                    return {'message': 'Invalid latitude'}, 400
-                record.latitude = args['latitude']
-                
-            if args.get('longitude') is not None:
-                if not -180 <= args['longitude'] <= 180:
-                    return {'message': 'Invalid longitude'}, 400
-                record.longitude = args['longitude']
-            
+            if not all([record_type, title, description, latitude, longitude]):
+                return {'message': 'All fields (type, title, description, latitude, longitude) are required'}, 400
+
+            if not -90 <= latitude <= 90:
+                return {'message': 'Invalid latitude'}, 400
+            record.latitude = latitude
+
+            if not -180 <= longitude <= 180:
+                return {'message': 'Invalid longitude'}, 400
+            record.longitude = longitude
+
+            record.title = title.strip()
+            record.description = description.strip()
+
+            # Handle uploaded image files
+            uploaded_files = request.files.getlist('images')
+            if uploaded_files:
+                image_urls = []
+                for file in uploaded_files:
+                    if file:
+                        upload_result = cloudinary.uploader.upload(file)
+                        image_urls.append(upload_result['secure_url'])
+                record.images = image_urls
+
             record.updated_at = datetime.now(timezone.utc)
             db.session.commit()
-            
+
             return {
                 'message': 'Record updated successfully',
                 'record': self.format_record(record)
             }
-            
+
         except Exception as e:
             db.session.rollback()
             return {'message': f'Error updating record: {str(e)}'}, 500
-    
+
     # DELETE record
     @jwt_required()
     def delete(self, record_id):
