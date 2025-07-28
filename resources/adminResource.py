@@ -15,11 +15,18 @@ def is_admin(user_id):
 
 class AdminResource(Resource):
     @jwt_required()
-    def get(self):
+    def get(self, record_id=None):
         user_id = get_jwt_identity()
 
         if not is_admin(user_id):
             return {'message': 'Admin access required'}, 403
+
+        if record_id is not None:
+            record = Record.query.get(record_id)
+            if not record:
+                return {'message': 'Record not found'}, 404
+            return self.format_record(record), 200
+
 
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -51,6 +58,7 @@ class AdminResource(Resource):
             'updated_at': record.updated_at.isoformat() if record.updated_at else None,
             'user_id': record.user_id
         }
+
 
     @jwt_required()
     def patch(self, record_id):
@@ -115,7 +123,6 @@ class AdminResource(Resource):
          - Old Status: {old_status}
          - New Status: {new_status}
         
-        {getattr(record, 'admin_comment', '')}
         """
         
         try:
