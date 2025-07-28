@@ -21,6 +21,7 @@ supabase = "*"
 psycopg2-binary = "*"
 sqlalchemy = "*"
 cloudinary = "*"
+flask-mail = "*"
 
 [dev-packages]
 
