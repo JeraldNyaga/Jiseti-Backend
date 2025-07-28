@@ -5,7 +5,7 @@ from models.baseModel import db
 from models.userModel import User
 from models.recordModel import Record
 from datetime import datetime, timezone
-from utils import send_email_notification, send_sms_notification
+from utils import send_email_notification
 
 def is_admin(user_id):
     user = User.query.get(user_id)
