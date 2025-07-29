@@ -22,6 +22,7 @@ psycopg2-binary = "*"
 sqlalchemy = "*"
 cloudinary = "*"
 flask-mail = "*"
+gunicorn = "*"
 
 [dev-packages]
 
