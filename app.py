@@ -43,8 +43,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 migrate = Migrate(app, db)
 
-with app.app_context():
-    db.create_all()
 
 # Initialize other extensions
 bcrypt = Bcrypt(app)
@@ -60,4 +58,4 @@ api.add_resource(RecordResource, "/records", "/records/<int:record_id>")
 # Admin routes
 api.add_resource(AdminResource, "/admin/records", "/admin/records/<int:record_id>")# Run the server
 if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+    app.run(port=5555)
