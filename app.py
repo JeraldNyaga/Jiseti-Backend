@@ -60,4 +60,4 @@ api.add_resource(RecordResource, "/records", "/records/<int:record_id>")
 # Admin routes
 api.add_resource(AdminResource, "/admin/records", "/admin/records/<int:record_id>")# Run the server
 if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+    app.run(port=5555)
