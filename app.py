@@ -50,10 +50,11 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Auth routes
 api.add_resource(SignupResource, "/signup")
-api.add_resource(LoginResource, "/login")
+api.add_resource(LoginResource, "/login","/profile")
 
 # User routes
 api.add_resource(RecordResource, "/records", "/records/<int:record_id>")
+
 
 # Admin routes
 api.add_resource(AdminResource, "/admin/records", "/admin/records/<int:record_id>")# Run the server
