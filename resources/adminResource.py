@@ -31,17 +31,10 @@ class AdminResource(Resource):
         page = request.args.get('page', 1, type=int)
         per_page = min(request.args.get('per_page', 10, type=int), 100)
 
-        records = Record.query.paginate(page=page, per_page=per_page, error_out=False)
+        records = Record.query.all()
 
         return {
-            'records': [self.format_record(r) for r in records.items],
-            'pagination': {
-                'page': page,
-                'pages': records.pages,
-                'total': records.total,
-                'has_next': records.has_next,
-                'has_prev': records.has_prev
-            }
+            'records': [self.format_record(r) for r in records],
         }
 
     def format_record(self, record):
@@ -132,4 +125,3 @@ class AdminResource(Resource):
         except Exception as e:
             # Log error but don't fail the request
             current_app.logger.error(f"Failed to send notification: {str(e)}")
-

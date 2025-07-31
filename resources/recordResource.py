@@ -43,21 +43,14 @@ class RecordResource(Resource):
             page = request.args.get('page', 1, type=int)
             per_page = min(request.args.get('per_page', 10, type=int), 100)
             
-            if is_admin(user_id):
-                records = Record.query.paginate(page=page, per_page=per_page, error_out=False)
-            else:
-                records = Record.query.filter_by(user_id=user_id)\
-                           .paginate(page=page, per_page=per_page, error_out=False)
+        if is_admin(user_id):
+            records = Record.query.all()
+        else:
+            records = Record.query.filter_by(user_id=user_id).all()
+
             
             return {
-                'records': [self.format_record(r) for r in records.items],
-                'pagination': {
-                    'page': page,
-                    'pages': records.pages,
-                    'total': records.total,
-                    'has_next': records.has_next,
-                    'has_prev': records.has_prev
-                }
+                'records': [self.format_record(r) for r in records],
             }
     
     def format_record(self, record):
