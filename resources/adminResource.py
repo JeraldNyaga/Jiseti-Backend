@@ -125,4 +125,3 @@ class AdminResource(Resource):
         except Exception as e:
             # Log error but don't fail the request
             current_app.logger.error(f"Failed to send notification: {str(e)}")
-
